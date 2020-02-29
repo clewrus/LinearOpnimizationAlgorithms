@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Numerics;
 using System.Text;
 
-namespace BigRationalExtentions {
+namespace BigRationalExtentions.Model {
 	public static class BigRationalExtention {
 		public static BigRational Fract (this BigRational num) {
 			var fractionPart = num.GetFractionPart();
