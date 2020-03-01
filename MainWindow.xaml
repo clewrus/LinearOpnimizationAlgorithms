@@ -4,11 +4,15 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:YakimovTheSimplex"
+		xmlns:custom="clr-namespace:YakimovTheSimplex.UIElements"
 		mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
 		<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
-			<SimplexTableControl xmlns="clr-namespace:YakimovTheSimplex.UIElements" Padding="40"/>
+			<custom:SimplexTableControl
+				Padding="40"
+				SimplexTableProperty="{Binding InputTable}"
+			/>
 		</ScrollViewer>
 		
 

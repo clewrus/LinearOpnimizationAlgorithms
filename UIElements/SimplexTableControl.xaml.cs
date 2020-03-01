@@ -40,8 +40,97 @@ namespace YakimovTheSimplex.UIElements {
 			AddConstraint(null, null);
 		}
 
+		private void RebindFields (SimplexTable tarTable) {
+			if (tarTable == null) return;
+
+			var nwValue = (TaskTypeComboBox.SelectedItem as ComboBoxItem).Content.ToString();
+			tarTable.MinimisationTask = nwValue == null || nwValue.ToLower() == "min"; ;
+
+			UnbindFields();
+
+			tarTable.NumOfConstrains = constrains.Count;
+			tarTable.NumOfVariables = costElements.Count;
+
+			var highlightErrorStyle = this.FindResource("HighlightErrorStyle") as Style;
+
+			for (int i = 0; i < costElements.Count; i++) {
+				costElements[i].label.DataContext = tarTable.cLables[i];
+				costElements[i].label.SetBinding(TextBox.TextProperty, new Binding {
+					Path = new PropertyPath("Value"),
+					Mode = BindingMode.TwoWay,
+					UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+				});
+				costElements[i].label.Style = highlightErrorStyle;
+
+				costElements[i].value.DataContext = tarTable.cVector[i];
+				costElements[i].value.SetBinding(TextBox.TextProperty, new Binding {
+					Path = new PropertyPath("StringValue"),
+					Mode = BindingMode.TwoWay,
+					UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+				});
+				costElements[i].value.Style = highlightErrorStyle;
+
+			}
+			for (int i = 0; i < bValues.Count; i++) {
+				bValues[i].DataContext = tarTable.bVector[i];
+				bValues[i].SetBinding(TextBox.TextProperty, new Binding {
+					Path = new PropertyPath("StringValue"),
+					Mode = BindingMode.TwoWay,
+					UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+				});
+				bValues[i].Style = highlightErrorStyle;
+			}
+			for (int i = 0; i < constrains.Count; i++) {
+				for (int j = 0; j < constrains[i].Count; j++) {
+					constrains[i][j].DataContext = tarTable.aMatrix[i][j];
+					constrains[i][j].SetBinding(TextBox.TextProperty, new Binding {
+						Path = new PropertyPath("StringValue"),
+						Mode = BindingMode.TwoWay,
+						UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+					});
+					constrains[i][j].Style = highlightErrorStyle;
+				}
+			}
+
+			Constant.DataContext = tarTable.constantValue;
+			Constant.SetBinding(TextBox.TextProperty, new Binding {
+				Path = new PropertyPath("StringValue"),
+				Mode = BindingMode.TwoWay,
+				UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+			});
+			Constant.Style = highlightErrorStyle;
+		}
+
+		private void UnbindFields () {
+			costElements.ForEach(c => {
+				c.label.Style = null;
+				c.label.DataContext = null;
+				BindingOperations.ClearBinding(c.label, TextBox.TextProperty);
+
+				c.value.Style = null;
+				c.value.DataContext = null;
+				BindingOperations.ClearBinding(c.value, TextBox.TextProperty);
+			});
+			bValues.ForEach(v => {
+				v.Style = null;
+				v.DataContext = null;
+				BindingOperations.ClearBinding(v, TextBox.TextProperty);
+			});
+			constrains.ForEach(c => c.ForEach(coef => {
+				coef.Style = null;
+				coef.DataContext = null;
+				BindingOperations.ClearBinding(coef, TextBox.TextProperty);
+			}));
+
+			Constant.Style = null;
+			Constant.DataContext = null;
+			BindingOperations.ClearBinding(Constant, TextBox.TextProperty);
+		}
+
 		private void AddCostFunctionVariable (object sender, RoutedEventArgs e) {
 			AddVariableToCostFunction();
+
+			RebindFields(SimplexTableProperty);
 		}
 
 		private void RemoveCostFunctionVariable (object sender, RoutedEventArgs e) {
@@ -49,9 +138,20 @@ namespace YakimovTheSimplex.UIElements {
 
 			RemoveVariableFromCostFunction();
 			RemoveVariableFromConstrains();
+
+			RebindFields(SimplexTableProperty);
 		}
 
-#region CostFunction
+		private void TaskTypeChanged (object sender, SelectionChangedEventArgs e) {
+			var nwValue = ((sender as ComboBox).SelectedItem as ComboBoxItem).Content as string;
+			var isMax = nwValue != null && nwValue.ToLower() == "max";
+
+			if (SimplexTableProperty != null) {
+				SimplexTableProperty.MinimisationTask = !isMax;
+			}
+		}
+
+		#region CostFunction
 
 		private void AddVariableToCostFunction () {
 			var nwElement = CreateCostElement();
@@ -138,6 +238,8 @@ namespace YakimovTheSimplex.UIElements {
 			Grid.SetRow(nwBValue, BGrid.RowDefinitions.Count - 1);
 			Grid.SetColumn(nwBValue, 0);
 			BGrid.Children.Add(nwBValue);
+
+			RebindFields(SimplexTableProperty);
 		}
 
 		private void RemoveConstraint (object sender, RoutedEventArgs e) {
@@ -153,6 +255,8 @@ namespace YakimovTheSimplex.UIElements {
 			BGrid.Children.Remove(bValues[bValues.Count - 1]);
 			BGrid.RowDefinitions.RemoveAt(BGrid.RowDefinitions.Count - 1);
 			bValues.RemoveAt(bValues.Count - 1);
+
+			RebindFields(SimplexTableProperty);
 		}
 
 		private void AddConstraintVariable (TextBox label) {
@@ -173,10 +277,10 @@ namespace YakimovTheSimplex.UIElements {
 			constrainsHeaders.Add(header);
 
 			var curText = label.Text;
-			label.SetBinding(TextBox.TextProperty, new Binding {
+			header.SetBinding(TextBox.TextProperty, new Binding {
 				Mode = BindingMode.TwoWay,
 				UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
-				Source = header,
+				Source = label,
 				Path = new PropertyPath("Text"),
 			});
 			label.Text = curText;
@@ -203,14 +307,15 @@ namespace YakimovTheSimplex.UIElements {
 			}
 		}
 
-
 		private TextBox ConstrainsCoef () {
-			return new TextBox {
+			var c = new TextBox {
 				TextAlignment = TextAlignment.Center,
 				BorderBrush = new SolidColorBrush(Colors.LightGray),
 				FontSize = 15,
-				Text = "0",			
+				Text = "0",
 			};
+
+			return c;
 		}
 
 		#endregion
@@ -220,8 +325,12 @@ namespace YakimovTheSimplex.UIElements {
 			set { SetValue(SimplexTablePropertyProperty, value); }
 		}
 
+		public static void SimplexTablePropertyChanged (DependencyObject d, DependencyPropertyChangedEventArgs e) {
+			(d as SimplexTableControl)?.RebindFields(e.NewValue as SimplexTable);
+		}
+
 		public static readonly DependencyProperty SimplexTablePropertyProperty =
 			DependencyProperty.Register("SimplexTableProperty", typeof(SimplexTable),
-				typeof(SimplexTableControl), new PropertyMetadata(null));
+				typeof(SimplexTableControl), new PropertyMetadata(SimplexTablePropertyChanged));
 	}
 }
