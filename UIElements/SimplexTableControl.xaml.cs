@@ -182,7 +182,7 @@ namespace YakimovTheSimplex.UIElements {
 				FontSize = 15,
 				TextAlignment = TextAlignment.Center,
 
-				BorderBrush = new SolidColorBrush(Colors.AliceBlue),
+				BorderBrush = new SolidColorBrush(Colors.LightGray),
 				BorderThickness = new Thickness((theFirst) ? 0 : 1, 0, 0, 1),
 			};
 
@@ -192,7 +192,7 @@ namespace YakimovTheSimplex.UIElements {
 				FontSize = 15,
 				TextAlignment = TextAlignment.Center,
 
-				BorderBrush = new SolidColorBrush(Colors.AliceBlue),
+				BorderBrush = new SolidColorBrush(Colors.LightGray),
 				BorderThickness = new Thickness((theFirst)? 0: 1, 1, 0, 0),
 			};
 

@@ -15,7 +15,7 @@ namespace BigRationalExtentions.Model {
 			return (num.Sign >= 0 || num.GetFractionPart() == BigRational.Zero) ? num.GetWholePart() : num.GetWholePart() - 1;
 		}
 
-		public static BigRational ToBigRational (this double num, int precision) {
+		public static BigRational ToBigRational (this double num, int precision=6) {
 			int den = (int)Math.Pow(10, precision);
 			return new BigRational((BigInteger)(num * den), (BigInteger)den);
 		}
