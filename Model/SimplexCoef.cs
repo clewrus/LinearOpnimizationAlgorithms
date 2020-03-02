@@ -3,12 +3,29 @@ using Numerics;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Numerics;
 using System.Text;
 
 namespace YakimovTheSimplex.Model {
 	public class SimplexCoef : INotifyPropertyChanged {
 		public event PropertyChangedEventHandler PropertyChanged;
+
+		public SimplexCoef () {
+			this.isM = false;
+			this.value = BigRational.Zero;
+
+			this._hasError = false;
+			this._stringValue = "0";
+		}
+
+		public SimplexCoef (SimplexCoef other) {
+			this.isM = other.isM;
+			this.value = other.value;
+
+			this._hasError = other._hasError;
+			this._stringValue = other._stringValue;
+		}
 
 		public bool isM;
 		public BigRational value;
@@ -33,12 +50,11 @@ namespace YakimovTheSimplex.Model {
 			}
 		}
 
-
 		private bool IsValid (string strValue) {
-			if (strValue.Length == 0) return true;
+			if (strValue.Length == 0) return false;
 			if (strValue[0] == '+' || strValue[0] == '-') {
 				strValue = strValue.Substring(1).Trim();
-				if (strValue.Length == 0) return true;
+				if (strValue.Length == 0) return false;
 			}
 			if (!Char.IsDigit(strValue[0]) && strValue[0] != 'M') return false;
 
@@ -59,7 +75,7 @@ namespace YakimovTheSimplex.Model {
 		private void ParseValue (string strValue) {
 			if (HasError) {
 				isM = false;
-				value = BigRational.One;
+				value = BigRational.Zero;
 				return;
 			}
 
@@ -97,5 +113,142 @@ namespace YakimovTheSimplex.Model {
 
 			return result;
 		}
+
+		#region Operations
+
+		public bool IsZero () {
+			return this.value == BigRational.Zero;
+		}
+
+		public bool IsOne () {
+			return this.value == BigRational.One;
+		}
+
+		public SimplexCoef GetInverted () {
+			if (this.HasError || this.IsZero()) return null;
+			if (this.isM) return new SimplexCoef();
+
+			var result = new SimplexCoef(this);
+			result.value = BigRational.One / result.value;
+			result._stringValue = result.ToString();
+
+			return result;
+		}
+
+		public static SimplexCoef operator + (SimplexCoef l, SimplexCoef r) {
+			if (l.HasError || r.HasError) return null;
+
+			SimplexCoef res = null;
+			if (l.isM && r.isM || !l.isM && !r.isM) {
+				res = new SimplexCoef(l);
+				res.value = l.value + r.value;
+
+			} else if (l.isM && !r.isM) {
+				res = new SimplexCoef(l);
+
+			} else if (!l.isM && r.isM) {
+				res = new SimplexCoef(r);
+			}
+
+			if (res.value == BigRational.Zero) {
+				res.isM = false;
+			}
+
+			Debug.Assert(res != null, "So strange ... ");
+			res._stringValue = res.ToString();
+
+			return res;
+		}
+
+		public static SimplexCoef operator - (SimplexCoef l, SimplexCoef r) {
+			if (l.HasError || r.HasError) return null;
+
+			SimplexCoef res = null;
+			if (l.isM && r.isM || !l.isM && !r.isM) {
+				res = new SimplexCoef(l);
+				res.value = l.value - r.value;
+
+			} else if (l.isM && !r.isM) {
+				res = new SimplexCoef(l);
+
+			} else if (!l.isM && r.isM) {
+				res = new SimplexCoef(r);
+			}
+
+			if (res.value == BigRational.Zero) {
+				res.isM = false;
+			}
+
+			Debug.Assert(res != null, "So strange ... ");
+			res._stringValue = res.ToString();
+
+			return res;
+		}
+
+		public static SimplexCoef operator - (SimplexCoef l) {
+			if (l.HasError) return null;
+
+			var res = new SimplexCoef(l);
+			res.value = -res.value;
+
+			return res;
+		}
+
+		public static SimplexCoef operator * (SimplexCoef l, SimplexCoef r) {
+			if (l.HasError || r.HasError) return null;
+
+			SimplexCoef res = null;
+			if (l.isM && r.isM || !l.isM && !r.isM) {
+				res = new SimplexCoef(l);
+
+			} else if (l.isM && !r.isM) {
+				res = new SimplexCoef(l);
+
+			} else if (!l.isM && r.isM) {
+				res = new SimplexCoef(r);
+			}
+
+			Debug.Assert(res != null, "So strange ... ");
+
+			res.value = l.value * r.value;
+			if (res.value == BigRational.Zero) {
+				res.isM = false;
+			}
+
+			res._stringValue = res.ToString();
+			return res;
+		}
+
+		public static SimplexCoef operator / (SimplexCoef l, SimplexCoef r) {
+			if (l.HasError || r.HasError) return null;
+			if (r.value == BigRational.Zero) return null;
+
+			SimplexCoef res = null;
+			if (l.isM && r.isM || !l.isM && !r.isM) {
+				res = new SimplexCoef(l);
+				res.isM = false;
+				res.value = l.value / r.value;
+
+			} else if (l.isM && !r.isM) {
+				res = new SimplexCoef(l);
+				res.value = l.value / r.value;
+
+			} else if (!l.isM && r.isM) {
+				res = new SimplexCoef(r);
+				res.isM = false;
+				res.value = BigRational.Zero;
+			}
+
+			Debug.Assert(res != null, "So strange ... ");
+
+			if (res.value == BigRational.Zero) {
+				res.isM = false;
+			}
+
+			res._stringValue = res.ToString();
+			return res;
+		}
+
+		#endregion
 	}
 }
