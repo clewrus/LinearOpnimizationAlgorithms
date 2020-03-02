@@ -50,6 +50,18 @@ namespace YakimovTheSimplex.Model {
 			}
 		}
 
+		public override string ToString () {
+			if (HasError) return "Can't parse";
+			string result = "";
+
+			result += (value.Fract() == 0) ? value.Numerator.ToString() : $"{value.Numerator}/{value.Denominator}";
+			result += (isM) ? " M" : "";
+
+			return result;
+		}
+
+		#region Parsing
+
 		private bool IsValid (string strValue) {
 			if (strValue.Length == 0) return false;
 			if (strValue[0] == '+' || strValue[0] == '-') {
@@ -104,15 +116,7 @@ namespace YakimovTheSimplex.Model {
 			value = (isPositive) ? uValue : -uValue;
 		}
 
-		public override string ToString () {
-			if (HasError) return "Can't parse";
-			string result = "";
-
-			result += (value.Fract() == 0) ? value.Numerator.ToString() : $"{value.Numerator}/{value.Denominator}";
-			result += (isM) ? " M" : "";
-
-			return result;
-		}
+		#endregion
 
 		#region Operations
 
@@ -249,6 +253,41 @@ namespace YakimovTheSimplex.Model {
 			return res;
 		}
 
+		public static bool operator > (SimplexCoef l, SimplexCoef r) {
+			if (l.HasError || r.HasError) throw new ArgumentException("Can't compare coefs with errors.");
+
+			if (l.isM && r.isM || !l.isM && !r.isM) {
+				return l.value > r.value;
+			} else if (l.isM && !r.isM) {
+				return l.value > BigRational.Zero;
+			} else if (!l.isM && r.isM) {
+				return BigRational.Zero > l.value;
+			}
+
+			throw new Exception("Logic fucked");
+		}
+
+		public static bool operator < (SimplexCoef l, SimplexCoef r) {
+			return r > l;
+		}
+
+		public static bool operator >= (SimplexCoef l, SimplexCoef r) {
+			if (l.HasError || r.HasError) throw new ArgumentException("Can't compare coefs with errors.");
+
+			if (l.isM && r.isM || !l.isM && !r.isM) {
+				return l.value >= r.value;
+			} else if (l.isM && !r.isM) {
+				return l.value > BigRational.Zero;
+			} else if (!l.isM && r.isM) {
+				return BigRational.Zero > l.value;
+			}
+
+			throw new Exception("Logic fucked");
+		}
+
+		public static bool operator <= (SimplexCoef l, SimplexCoef r) {
+			return r >= l;
+		}
 		#endregion
 	}
 }

@@ -7,6 +7,35 @@ namespace YakimovTheSimplex.Model {
 	public class SimplexTable : INotifyPropertyChanged {
 		public event PropertyChangedEventHandler PropertyChanged;
 
+		private int _numOfVariables;
+		public int NumOfVariables {
+			get => _numOfVariables;
+			set {
+				_numOfVariables = value;
+				SetNumOfVariables(_numOfVariables);
+				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("NumOfVariables"));
+			}
+		}
+
+		private int _numOfConstrains;
+		public int NumOfConstrains {
+			get => _numOfConstrains;
+			set {
+				_numOfConstrains = value;
+				SetNumOfConstrains(_numOfConstrains);
+				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("NumOfConstrains"));
+			}
+		}
+
+		private bool _minimisationTask;
+		public bool MinimisationTask {
+			get => _minimisationTask;
+			set {
+				_minimisationTask = value;
+				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("MinimisationTask"));
+			}
+		}
+
 		public SimplexCoef constantValue;
 
 		public List<CostLable> cLables;
@@ -21,6 +50,24 @@ namespace YakimovTheSimplex.Model {
 			cVector = new List<SimplexCoef>();
 			aMatrix = new List<List<SimplexCoef>>();
 			bVector = new List<SimplexCoef>();
+		}
+
+		public SimplexTable (SimplexTable other) : this() {
+			this._numOfVariables = other._numOfVariables;
+			this._numOfConstrains = other._numOfConstrains;
+			this._minimisationTask = other._minimisationTask;
+
+			this.constantValue = new SimplexCoef(other.constantValue);
+			other.cLables.ForEach(otherLable => this.cLables.Add(new CostLable(otherLable)));
+			other.cVector.ForEach(otherCoef => this.cVector.Add(new SimplexCoef(otherCoef)));
+
+			other.aMatrix.ForEach(otherRow => {
+				var nwRow = new List<SimplexCoef>(otherRow.Count);
+				otherRow.ForEach(otherCoef => nwRow.Add(new SimplexCoef(otherCoef)));
+				this.aMatrix.Add(nwRow);
+			});
+
+			other.bVector.ForEach(otherCoef => this.bVector.Add(new SimplexCoef(otherCoef)));
 		}
 
 		private void SetNumOfVariables (int nwNum) {
@@ -63,37 +110,15 @@ namespace YakimovTheSimplex.Model {
 
 		}
 
-		private int _numOfVariables;
-		public int NumOfVariables {
-			get => _numOfVariables;
-			set {
-				_numOfVariables = value;
-				SetNumOfVariables(_numOfVariables);
-				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("NumOfVariables"));
-			}
-		}
-
-		private int _numOfConstrains;
-		public int NumOfConstrains {
-			get => _numOfConstrains;
-			set {
-				_numOfConstrains = value;
-				SetNumOfConstrains(_numOfConstrains);
-				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("NumOfConstrains"));
-			}
-		}
-
-		private bool _minimisationTask;
-		public bool MinimisationTask {
-			get => _minimisationTask;
-			set {
-				_minimisationTask = value;
-				PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("MinimisationTask"));
-			}
-		}
-
 		public class CostLable : INotifyPropertyChanged {
 			public event PropertyChangedEventHandler PropertyChanged;
+
+			public CostLable () { }
+
+			public CostLable (CostLable other) {
+				this._hasError = other._hasError;
+				this._value = other._value;
+			}
 
 			private bool _hasError;
 			public bool HasError {
