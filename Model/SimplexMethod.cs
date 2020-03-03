@@ -6,16 +6,17 @@ using System.Text;
 
 namespace YakimovTheSimplex.Model {
 	public class SimplexMethod : ISimplexTableTransform {
-		private List<int> curBasis;
-		private List<SimplexCoef> curDelta;
+		protected List<int> curBasis;
+		protected List<SimplexCoef> curDelta;
 
-		public string MakeTransform (SimplexTable inputTable, out SimplexTable outputTable, out bool success) {
+		public virtual string MakeTransform (SimplexTable inputTable, out SimplexTable outputTable, out bool success) {
 			outputTable = new SimplexTable(inputTable);
 			string result = "Let's use simplex method.<br>";
 			PrepareForMethod(outputTable, out outputTable, ref result);
 
 			result += "Step 0:<br>";
 			result += PrintTableToHTML(outputTable, curBasis, curDelta);
+			result += "<br><br>";
 
 			int iterNum = 0;
 			string checkResult = "";
@@ -39,13 +40,34 @@ namespace YakimovTheSimplex.Model {
 				var jordanTransform = new JordanTransform(minTetaIndex, minDeltaIndex);
 				result += jordanTransform.MakeTransform(outputTable, out outputTable, out bool s);
 
-				ReevaluateBasisAndDaltas(outputTable);
+				ReevaluateBasisAndDeltas(outputTable);
 				result += PrintTableToHTML(outputTable, curBasis, curDelta);
-				result += "<br><br><br>";
+				result += "<br><br>";
 			}
 
 			result += checkResult;
 
+			if (success) {
+				result += FormAnswer(outputTable, curBasis);
+			}
+			return result;
+		}
+
+		protected string FormAnswer (SimplexTable table, List<int> basis) {
+			var result = "";
+			for (int j = 0; j < table.NumOfVariables; j++) {
+				if (basis.Contains(j)) {
+					result += $"{table.cLables[j].Value} = {table.bVector[basis.IndexOf(j)].ToString()}";
+				} else {
+					result += $"{table.cLables[j].Value} = 0";
+				}
+
+				if (j + 1 < table.NumOfVariables) {
+					result += ", ";
+				}
+			}
+
+			result += "<br>";
 			return result;
 		}
 
@@ -77,7 +99,7 @@ namespace YakimovTheSimplex.Model {
 			return true;
 		}
 
-		private string PrintTableToHTML (SimplexTable table, List<int> basis, List<SimplexCoef> delta) {
+		protected string PrintTableToHTML (SimplexTable table, List<int> basis, List<SimplexCoef> delta) {
 			var resBuilder = new StringBuilder();
 			resBuilder.Append("<table><tr>");
 
@@ -120,10 +142,10 @@ namespace YakimovTheSimplex.Model {
 			var basisFormer = new MMethod();
 			result += basisFormer.MakeTransform(outputTable, out outputTable, out bool s);
 
-			ReevaluateBasisAndDaltas(outputTable);
+			ReevaluateBasisAndDeltas(outputTable);
 		}
 
-		private void ReevaluateBasisAndDaltas (SimplexTable table) {
+		protected void ReevaluateBasisAndDeltas (SimplexTable table) {
 			if (!table.TryFindBasis(out int[] basis)) {
 				Debug.Fail("Can't find basis after MMethod.");
 			}
@@ -138,7 +160,7 @@ namespace YakimovTheSimplex.Model {
 			curDelta = EvaluateDeltas(basisC, table);
 		}
 
-		private int FindIndexOfMin (List<SimplexCoef> delta) {
+		protected int FindIndexOfMin (List<SimplexCoef> delta) {
 			int resIndex = 0;
 			SimplexCoef minCoef = delta[0];
 
@@ -153,7 +175,7 @@ namespace YakimovTheSimplex.Model {
 			return resIndex;
 		}
 
-		private List<SimplexCoef> EvaluateDeltas (List<SimplexCoef> basisC, SimplexTable table) {
+		protected List<SimplexCoef> EvaluateDeltas (List<SimplexCoef> basisC, SimplexTable table) {
 			var simplexDeltes = new List<SimplexCoef>();
 
 			for (int j = 0; j < table.NumOfVariables; j++) {

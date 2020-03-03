@@ -22,7 +22,7 @@ namespace YakimovTheSimplex.ViewModels {
 		public ICommand SimplexCommand {
 			get => new ViewModelCommand(
 				param => {
-					var simplexTransform = new SimplexMethod();
+					var simplexTransform = new DualSimplexMethod();
 					var output = simplexTransform.MakeTransform(InputTable, out SimplexTable table, out bool success);
 
 
