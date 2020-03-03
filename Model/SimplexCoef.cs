@@ -60,6 +60,10 @@ namespace YakimovTheSimplex.Model {
 			return result;
 		}
 
+		public void UpdateStringValue () {
+			_stringValue = ToString();
+		}
+
 		#region Parsing
 
 		private bool IsValid (string strValue) {
@@ -125,6 +129,7 @@ namespace YakimovTheSimplex.Model {
 		}
 
 		public bool IsOne () {
+			if (this.isM) return false;
 			return this.value == BigRational.One;
 		}
 
@@ -177,6 +182,7 @@ namespace YakimovTheSimplex.Model {
 
 			} else if (!l.isM && r.isM) {
 				res = new SimplexCoef(r);
+				res.value *= BigRational.MinusOne;
 			}
 
 			if (res.value == BigRational.Zero) {
@@ -261,7 +267,7 @@ namespace YakimovTheSimplex.Model {
 			} else if (l.isM && !r.isM) {
 				return l.value > BigRational.Zero;
 			} else if (!l.isM && r.isM) {
-				return BigRational.Zero > l.value;
+				return BigRational.Zero > r.value;
 			}
 
 			throw new Exception("Logic fucked");
@@ -279,7 +285,7 @@ namespace YakimovTheSimplex.Model {
 			} else if (l.isM && !r.isM) {
 				return l.value > BigRational.Zero;
 			} else if (!l.isM && r.isM) {
-				return BigRational.Zero > l.value;
+				return BigRational.Zero > r.value;
 			}
 
 			throw new Exception("Logic fucked");

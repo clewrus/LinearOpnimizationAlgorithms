@@ -70,6 +70,36 @@ namespace YakimovTheSimplex.Model {
 			other.bVector.ForEach(otherCoef => this.bVector.Add(new SimplexCoef(otherCoef)));
 		}
 
+		public bool TryFindBasis (out int[] basisVariablesIndexes) {
+			var result = new int[aMatrix.Count];
+			for (int i = 0; i < result.Length; i++) result[i] = -1;
+
+			for (int i = 0; i < aMatrix.Count; i++) {
+				for (int j = 0; j < aMatrix[i].Count; j++) {
+					if (!aMatrix[i][j].IsOne()) continue;
+
+					bool isBasis = true;
+					for (int i0 = 0; i0 < aMatrix.Count; i0++) {
+						isBasis = isBasis && (i0 == i || aMatrix[i0][j].IsZero()); 
+					}
+
+					if (isBasis) {
+						result[i] = j;
+						break;
+					}
+				}
+			}
+
+			basisVariablesIndexes = result;
+			foreach (var ind in result) {
+				if (ind == -1) return false;
+			}
+
+			return true;
+		}
+
+		#region Risizing
+
 		private void SetNumOfVariables (int nwNum) {
 			int delta = nwNum - cLables.Count;
 			for (int i = 0; i < delta; i++) {
@@ -109,6 +139,8 @@ namespace YakimovTheSimplex.Model {
 			}
 
 		}
+
+		#endregion
 
 		public class CostLable : INotifyPropertyChanged {
 			public event PropertyChangedEventHandler PropertyChanged;

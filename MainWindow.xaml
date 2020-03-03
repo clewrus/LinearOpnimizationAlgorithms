@@ -7,14 +7,22 @@
 		xmlns:custom="clr-namespace:YakimovTheSimplex.UIElements"
 		mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
-    <Grid>
-		<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+	<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+		<Grid>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="Auto"/>
+				<RowDefinition Height="Auto"/>
+			</Grid.RowDefinitions>
+			
 			<custom:SimplexTableControl
-				Padding="40"
-				SimplexTableProperty="{Binding InputTable}"
-			/>
-		</ScrollViewer>
-		
+					Grid.Row="0"
+					Padding="40"
+					SimplexTableProperty="{Binding InputTable}"
+				/>
 
-	</Grid>
+			<StackPanel Orientation="Horizontal" Grid.Row="1">
+				<Button Command="{Binding SimplexCommand}">Make Some Simplex</Button>
+			</StackPanel>
+		</Grid>
+	</ScrollViewer>
 </Window>
