@@ -38,14 +38,15 @@ namespace YakimovTheSimplex.Model {
 			}
 
 			string result = "Let's use M method to add some new variables.<br>";
-			result += "So ..... our new variables will be: ";
+			result += "So ..... our new sintetic variables will be: ";
 
 			for (int i = 0; i < basisIndex.Length; i++) {
 				if (basisIndex[i] >= 0) continue;
 
 				table.NumOfVariables += 1;
+				table.sinteticVariables.Add(table.cVector.Count - 1);
 				var l_coef = table.cVector[table.cVector.Count - 1];
-
+				
 				l_coef.isM = true;
 				l_coef.value = (table.MinimisationTask) ? BigRational.One : BigRational.MinusOne;
 				l_coef.UpdateStringValue();

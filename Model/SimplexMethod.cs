@@ -39,8 +39,14 @@ namespace YakimovTheSimplex.Model {
 
 				var jordanTransform = new JordanTransform(minTetaIndex, minDeltaIndex);
 				result += jordanTransform.MakeTransform(outputTable, out outputTable, out bool s);
-
 				ReevaluateBasisAndDeltas(outputTable);
+
+				int numOfVariablesBeforeRemovingUnused = outputTable.NumOfVariables;
+				result += RemoveUnusedSinteticVariables(outputTable, out outputTable, curBasis);
+				if (outputTable.NumOfVariables != numOfVariablesBeforeRemovingUnused) {
+					ReevaluateBasisAndDeltas(outputTable);
+				}
+
 				result += PrintTableToHTML(outputTable, curBasis, curDelta);
 				result += "<br><br>";
 			}
@@ -143,6 +149,46 @@ namespace YakimovTheSimplex.Model {
 			result += basisFormer.MakeTransform(outputTable, out outputTable, out bool s);
 
 			ReevaluateBasisAndDeltas(outputTable);
+		}
+
+		protected string RemoveUnusedSinteticVariables (SimplexTable inputTable, out SimplexTable outputTable, List<int> basis) {
+			outputTable = new SimplexTable(inputTable);
+
+			string result = "";
+			for (int p = 0; p < outputTable.sinteticVariables.Count; p++) {
+				int sintInd = outputTable.sinteticVariables[p];
+				if (basis.Contains(sintInd)) continue;
+
+				if (result.Length == 0) {
+					result += "We have some sintetic variables out of basis, let's remove them: ";
+				}
+
+				result += $"{outputTable.cLables[sintInd].Value} ";
+
+				for (int j = sintInd; j < outputTable.NumOfVariables - 1; j++) {
+					outputTable.cLables[j] = outputTable.cLables[j + 1];
+					outputTable.cVector[j] = outputTable.cVector[j + 1];
+
+					for (int i = 0; i < outputTable.NumOfConstrains; i++) {
+						outputTable.aMatrix[i][j] = outputTable.aMatrix[i][j + 1];
+					}
+				}
+
+				for (int k = 0; k < basis.Count; k++) {
+					if (basis[k] < sintInd) continue;
+					--basis[k];
+				}
+
+				for (int k = 0; k < outputTable.sinteticVariables.Count; k++) {
+					if (outputTable.sinteticVariables[k] < sintInd) continue;
+					--outputTable.sinteticVariables[k];
+				}
+
+				outputTable.sinteticVariables.RemoveAt(p--);
+				outputTable.NumOfVariables -= 1;
+			}
+
+			return result;
 		}
 
 		protected void ReevaluateBasisAndDeltas (SimplexTable table) {

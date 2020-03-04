@@ -32,7 +32,7 @@
 			</ComboBox>
 		</StackPanel>
 		
-		<DockPanel Grid.Row="1">
+		<DockPanel Grid.Row="1" Margin="0, 20, 0, 0">
 			<TextBlock DockPanel.Dock="Left"
 				Width="{Binding ActualHeight, Mode=OneWay, RelativeSource={RelativeSource Mode=Self}}"
 				FontSize="35"
@@ -49,6 +49,7 @@
 				<Border BorderThickness="1" BorderBrush="#FF707070">
 					<Grid x:Name="LGrid">
 						<Grid.RowDefinitions>
+							<RowDefinition/>
 							<RowDefinition/>
 							<RowDefinition/>
 						</Grid.RowDefinitions>

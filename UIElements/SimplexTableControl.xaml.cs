@@ -16,7 +16,7 @@ namespace YakimovTheSimplex.UIElements {
 
 	public partial class SimplexTableControl : UserControl {
 
-		private List<(TextBox label, TextBox value)> costElements;
+		private List<(CheckBox isSelected, TextBox label, TextBox value)> costElements;
 
 		private List<List<TextBox>> constrains;
 		private List<UIElement> constrainsHeaders;
@@ -24,7 +24,7 @@ namespace YakimovTheSimplex.UIElements {
 		private List<TextBox> bValues;
 
 		public SimplexTableControl () {
-			costElements = new List<(TextBox label, TextBox value)>();
+			costElements = new List<(CheckBox isSelected, TextBox label, TextBox value)>();
 			constrains = new List<List<TextBox>>();
 			constrainsHeaders = new List<UIElement>();
 			bValues = new List<TextBox>();
@@ -54,6 +54,13 @@ namespace YakimovTheSimplex.UIElements {
 			var highlightErrorStyle = this.FindResource("HighlightErrorStyle") as Style;
 
 			for (int i = 0; i < costElements.Count; i++) {
+				costElements[i].isSelected.DataContext = tarTable.cLables[i];
+				costElements[i].isSelected.SetBinding(CheckBox.IsCheckedProperty, new Binding {
+					Path = new PropertyPath("IsSelected"),
+					Mode = BindingMode.TwoWay,
+					UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+				});
+
 				costElements[i].label.DataContext = tarTable.cLables[i];
 				costElements[i].label.SetBinding(TextBox.TextProperty, new Binding {
 					Path = new PropertyPath("Value"),
@@ -103,6 +110,9 @@ namespace YakimovTheSimplex.UIElements {
 
 		private void UnbindFields () {
 			costElements.ForEach(c => {
+				c.label.DataContext = null;
+				BindingOperations.ClearBinding(c.isSelected, CheckBox.IsCheckedProperty);
+
 				c.label.Style = null;
 				c.label.DataContext = null;
 				BindingOperations.ClearBinding(c.label, TextBox.TextProperty);
@@ -161,20 +171,32 @@ namespace YakimovTheSimplex.UIElements {
 				Width = new GridLength(50)
 			});
 
+			LGrid.Children.Add(nwElement.isSelected);
 			LGrid.Children.Add(nwElement.label);
 			LGrid.Children.Add(nwElement.value);
 
-			Grid.SetRow(nwElement.label, 0);
-			Grid.SetRow(nwElement.value, 1);
+			Grid.SetRow(nwElement.isSelected, 0);
+			Grid.SetRow(nwElement.label, 1);
+			Grid.SetRow(nwElement.value, 2);
 
+			Grid.SetColumn(nwElement.isSelected, LGrid.ColumnDefinitions.Count - 1);
 			Grid.SetColumn(nwElement.label, LGrid.ColumnDefinitions.Count - 1);
 			Grid.SetColumn(nwElement.value, LGrid.ColumnDefinitions.Count - 1);
 
 			AddConstraintVariable(nwElement.label);
 		}
 
-		private (TextBox label, TextBox value) CreateCostElement () {
+		private (CheckBox isSelected, TextBox label, TextBox value) CreateCostElement () {
 			bool theFirst = LGrid.ColumnDefinitions.Count == 0;
+
+			var nwIsSelected = new CheckBox {
+				HorizontalAlignment = HorizontalAlignment.Center,
+				VerticalAlignment = VerticalAlignment.Bottom,
+
+				BorderBrush = new SolidColorBrush(Colors.DarkGray),
+				BorderThickness = new Thickness(1, 1, 1, 1),
+				Margin = new Thickness(0, -20, 0, 0),
+			};
 
 			var nwLabel = new TextBox {
 				Text = $"x{LGrid.ColumnDefinitions.Count + 1}",
@@ -196,13 +218,14 @@ namespace YakimovTheSimplex.UIElements {
 				BorderThickness = new Thickness((theFirst)? 0: 1, 1, 0, 0),
 			};
 
-			return (nwLabel, nwValue);
+			return (nwIsSelected, nwLabel, nwValue);
 		}
 
 		private void RemoveVariableFromCostFunction () {
 			var tarElement = costElements[costElements.Count - 1];
 			costElements.RemoveAt(costElements.Count - 1);
 
+			LGrid.Children.Remove(tarElement.isSelected);
 			LGrid.Children.Remove(tarElement.label);
 			LGrid.Children.Remove(tarElement.value);
 

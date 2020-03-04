@@ -44,12 +44,15 @@ namespace YakimovTheSimplex.Model {
 		public List<List<SimplexCoef>> aMatrix;
 		public List<SimplexCoef> bVector;
 
+		public List<int> sinteticVariables;
+
 		public SimplexTable () {
 			constantValue = new SimplexCoef();
 			cLables = new List<CostLable>();
 			cVector = new List<SimplexCoef>();
 			aMatrix = new List<List<SimplexCoef>>();
 			bVector = new List<SimplexCoef>();
+			sinteticVariables = new List<int>();
 		}
 
 		public SimplexTable (SimplexTable other) : this() {
@@ -68,6 +71,7 @@ namespace YakimovTheSimplex.Model {
 			});
 
 			other.bVector.ForEach(otherCoef => this.bVector.Add(new SimplexCoef(otherCoef)));
+			this.sinteticVariables = new List<int>(other.sinteticVariables);
 		}
 
 		public bool TryFindBasis (out int[] basisVariablesIndexes) {
@@ -150,6 +154,15 @@ namespace YakimovTheSimplex.Model {
 			public CostLable (CostLable other) {
 				this._hasError = other._hasError;
 				this._value = other._value;
+			}
+
+			private bool _isSelected;
+			public bool IsSelected {
+				get => _isSelected;
+				set {
+					_isSelected = value;
+					PropertyChanged?.Invoke(this, new PropertyChangedEventArgs("Selected"));
+				}
 			}
 
 			private bool _hasError;

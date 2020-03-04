@@ -21,19 +21,37 @@ namespace YakimovTheSimplex.ViewModels {
 
 		public ICommand SimplexCommand {
 			get => new ViewModelCommand(
-				param => {
-					var simplexTransform = new DualSimplexMethod();
-					var output = simplexTransform.MakeTransform(InputTable, out SimplexTable table, out bool success);
-
-
-					using (var nwFile = File.OpenWrite("result.html")) {
-						using (var writer = new StreamWriter(nwFile)) {
-							writer.WriteLine(output);
-						}
-					}
-					
-				}	
+				param => RunMethod(new SimplexMethod(), "SimplexResult.html")	
 			);
+		}
+
+		public ICommand DualSimplexCommand {
+			get => new ViewModelCommand(
+				param => RunMethod(new DualSimplexMethod(), "DualSimplexResult.html")
+			);
+		}
+
+		public ICommand GomoriICommand {
+			get => new ViewModelCommand(
+				param => RunMethod(new GomoriI(), "DualSimplexResult.html")
+			);
+		}
+
+		private void RunMethod (ISimplexTableTransform method, string fileName) {
+			var output = method.MakeTransform(InputTable, out SimplexTable table, out bool success);
+
+			string path = null;
+			using (var nwFile = File.Open(fileName, FileMode.Create, FileAccess.Write)) {
+				using (var writer = new StreamWriter(nwFile)) {
+					writer.WriteLine(output);
+				}
+				path = nwFile.Name;
+			}
+
+			try {
+				System.Diagnostics.Process.Start(@"cmd.exe ", @"/c " + path);
+			} catch { }
+			
 		}
 
 	}

@@ -38,6 +38,13 @@ namespace YakimovTheSimplex.Model {
 				result += jordanTransform.MakeTransform(outputTable, out outputTable, out bool s);
 
 				ReevaluateBasisAndDeltas(outputTable);
+
+				int numOfVariablesBeforeRemovingUnused = outputTable.NumOfVariables;
+				result += RemoveUnusedSinteticVariables(outputTable, out outputTable, curBasis);
+				if (outputTable.NumOfVariables != numOfVariablesBeforeRemovingUnused) {
+					ReevaluateBasisAndDeltas(outputTable);
+				}
+
 				result += PrintTableToHTML(outputTable, curBasis, curDelta);
 				result += "<br><br>";
 			}

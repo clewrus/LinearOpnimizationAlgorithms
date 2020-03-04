@@ -7,6 +7,14 @@
 		xmlns:custom="clr-namespace:YakimovTheSimplex.UIElements"
 		mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
+
+	<Window.Resources>
+		<Style x:Key="RunButton" TargetType="Button">
+			<Setter Property="Margin" Value="10,2"/>
+			<Setter Property="Background" Value="LightGray"/>
+		</Style>
+	</Window.Resources>
+
 	<ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
 		<Grid>
 			<Grid.RowDefinitions>
@@ -18,11 +26,20 @@
 					Grid.Row="0"
 					Padding="40"
 					SimplexTableProperty="{Binding InputTable}"
-				/>
+			/>
 
-			<StackPanel Orientation="Horizontal" Grid.Row="1">
-				<Button Command="{Binding SimplexCommand}">Make Some Simplex</Button>
-			</StackPanel>
+			<UniformGrid Grid.Row="1" Rows="2" Columns="4" Width="600" Margin="50,0" HorizontalAlignment="Left">
+				<Button Grid.Row="0" Grid.Column="0" Content="Run Simplex" Style="{StaticResource RunButton}" Command="{Binding SimplexCommand}"/>
+				<Button Grid.Row="0" Grid.Column="1" Content="Run Dual Simplex" Style="{StaticResource RunButton}"  Command="{Binding DualSimplexCommand}"/>
+				<Button Visibility="Hidden"  Style="{StaticResource RunButton}"/>
+				<Button Visibility="Hidden"  Style="{StaticResource RunButton}"/>
+
+				<Button Grid.Row="1" Grid.Column="0" Content="Run Gomori I" Style="{StaticResource RunButton}" Command="{Binding GomoriICommand}"/>
+				<Button Grid.Row="1" Grid.Column="1" Content="Run Gomori II" Style="{StaticResource RunButton}"/>
+				<Button Grid.Row="1" Grid.Column="2" Content="Run Gomori III" Style="{StaticResource RunButton}"/>
+				<Button Grid.Row="1" Grid.Column="3" Content="Run Dalton-Lleveline" Style="{StaticResource RunButton}"/>
+
+			</UniformGrid>
 		</Grid>
 	</ScrollViewer>
 </Window>
