@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -98,6 +99,27 @@ namespace YakimovTheSimplex.UIElements {
 					constrains[i][j].Style = highlightErrorStyle;
 				}
 			}
+			for (int i = 0; i < tarTable.NumOfVariables; i++) {
+				var curRow = ((StackPanel)xSet.Children[i]).Children;
+				if (tarTable.discreteSet[i].Count != curRow.Count - 1) {
+					tarTable.discreteSet[i] = new List<SimplexCoef>();
+					for (int k = 0; k < curRow.Count - 1; k++) {
+						tarTable.discreteSet[i].Add(new SimplexCoef());
+					}
+				}
+				for (int k = 0; k < curRow.Count - 1; k++) {
+					var curText = ((TextBox)curRow[k]).Text;
+					((TextBox)curRow[k]).DataContext = tarTable.discreteSet[i][k];
+					((TextBox)curRow[k]).SetBinding(TextBox.TextProperty, new Binding {
+						Path = new PropertyPath("StringValue"),
+						UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+					});
+
+					((TextBox)curRow[k]).TextChanged -= XSetCellTextChanged;
+					((TextBox)curRow[k]).Text = curText;
+					((TextBox)curRow[k]).TextChanged += XSetCellTextChanged;
+				}
+			}
 
 			Constant.DataContext = tarTable.constantValue;
 			Constant.SetBinding(TextBox.TextProperty, new Binding {
@@ -132,6 +154,19 @@ namespace YakimovTheSimplex.UIElements {
 				BindingOperations.ClearBinding(coef, TextBox.TextProperty);
 			}));
 
+			foreach (StackPanel rows in xSet.Children) {
+				for (int i = 0; i < rows.Children.Count; i++) {
+					TextBox cell = rows.Children[i] as TextBox;
+					var t = cell.Text;
+					BindingOperations.ClearBinding(cell, TextBox.TextProperty);
+					cell.DataContext = null;
+
+					cell.TextChanged -= XSetCellTextChanged;
+					cell.Text = t;
+					cell.TextChanged += XSetCellTextChanged;
+				}
+			}
+
 			Constant.Style = null;
 			Constant.DataContext = null;
 			BindingOperations.ClearBinding(Constant, TextBox.TextProperty);
@@ -139,6 +174,7 @@ namespace YakimovTheSimplex.UIElements {
 
 		private void AddCostFunctionVariable (object sender, RoutedEventArgs e) {
 			AddVariableToCostFunction();
+			AddXSetRow();
 
 			RebindFields(SimplexTableProperty);
 		}
@@ -150,6 +186,7 @@ namespace YakimovTheSimplex.UIElements {
 			RemoveVariableFromConstrains();
 
 			RebindFields(SimplexTableProperty);
+			RemoveXSetRow();
 		}
 
 		private void TaskTypeChanged (object sender, SelectionChangedEventArgs e) {
@@ -161,7 +198,7 @@ namespace YakimovTheSimplex.UIElements {
 			}
 		}
 
-		#region CostFunction
+#region CostFunction
 
 		private void AddVariableToCostFunction () {
 			var nwElement = CreateCostElement();
@@ -232,7 +269,7 @@ namespace YakimovTheSimplex.UIElements {
 			LGrid.ColumnDefinitions.RemoveAt(LGrid.ColumnDefinitions.Count - 1);
 		}
 
-		#endregion
+#endregion
 
 #region ConstrainsFunction
 
@@ -339,6 +376,124 @@ namespace YakimovTheSimplex.UIElements {
 			};
 
 			return c;
+		}
+
+		#endregion
+
+		#region XSet
+
+		private void AddXSetRow () {
+			var nwRow = new StackPanel {
+				Orientation = Orientation.Horizontal,
+				HorizontalAlignment = HorizontalAlignment.Left,
+			};
+
+			var c = XSetCoef();	
+			c.Text = "0";
+			c.Background = new SolidColorBrush(Colors.LightGray);
+			c.IsReadOnly = true;
+			nwRow.Children.Add(c);
+
+			AddFreeXSetCell(nwRow);
+
+			xSet.Children.Add(nwRow);
+			if (SimplexTableProperty != null) {
+				var nwCoef = new SimplexCoef();
+				SimplexTableProperty.discreteSet[SimplexTableProperty.discreteSet.Count - 1].Add(nwCoef);
+
+				c.DataContext = nwCoef;
+				c.SetBinding(TextBox.TextProperty, new Binding {
+					Path = new PropertyPath("StringValue"),
+					Mode = BindingMode.TwoWay,
+					UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+				});
+			}
+		}
+
+		private void RemoveXSetRow () {
+			var lastRow = xSet.Children[xSet.Children.Count - 1] as StackPanel;
+			foreach (TextBox elem in lastRow.Children) {
+				BindingOperations.ClearBinding(elem, TextBox.TextProperty);
+				elem.TextChanged -= XSetCellTextChanged;
+				elem.LostKeyboardFocus -= XSetCellInputComplete;
+			}
+			xSet.Children.RemoveAt(xSet.Children.Count - 1);
+		}
+
+		private TextBox XSetCoef () {
+			var c = new TextBox {
+				TextAlignment = TextAlignment.Center,
+				BorderBrush = new SolidColorBrush(Colors.DarkGray),
+				FontSize = 15,
+				Width = 50,
+			};
+
+			return c;
+		}
+
+		private void AddFreeXSetCell (StackPanel row) {
+			var c = XSetCoef();
+
+			c.TextChanged += XSetCellTextChanged;
+			c.LostKeyboardFocus += XSetCellInputComplete;
+
+			row.Children.Add(c);
+		}
+
+		private void XSetCellTextChanged (object sender, TextChangedEventArgs e) {
+			if (!(sender is TextBox tarCell)) return;
+			if (tarCell.DataContext is SimplexCoef) return;
+			if (tarCell.Text.Trim().Length == 0) return;
+
+			int variableIndex = FindVariableIndex(tarCell);
+
+			if (SimplexTableProperty != null) {
+				var nwCoef = new SimplexCoef();
+				SimplexTableProperty.discreteSet[variableIndex].Add(nwCoef);
+				tarCell.DataContext = nwCoef;
+				tarCell.Style = this.FindResource("HighlightErrorStyle") as Style;
+
+				var curText = tarCell.Text;
+				tarCell.SetBinding(TextBox.TextProperty, new Binding {
+					Path = new PropertyPath("StringValue"),
+					Mode = BindingMode.TwoWay,
+					UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+				});
+				tarCell.Text = curText;
+				tarCell.CaretIndex = tarCell.Text.Length;
+			}
+
+			AddFreeXSetCell(xSet.Children[variableIndex] as StackPanel);
+		}
+
+		private void XSetCellInputComplete (object sender, KeyboardFocusChangedEventArgs e) {
+			if (!(sender is TextBox tarCell)) return;
+			if (!(tarCell.DataContext is SimplexCoef)) return;
+			if (tarCell.Text.Trim().Length != 0) return;
+
+			int variableIndex = FindVariableIndex(tarCell);
+			int elemIndex = ((StackPanel)xSet.Children[variableIndex]).Children.IndexOf(tarCell);
+
+			BindingOperations.ClearBinding(tarCell, TextBox.TextProperty);
+			tarCell.TextChanged -= XSetCellTextChanged;
+			tarCell.LostKeyboardFocus -= XSetCellInputComplete;
+
+			((StackPanel)xSet.Children[variableIndex]).Children.RemoveAt(elemIndex);
+			if (SimplexTableProperty != null) {
+				SimplexTableProperty.discreteSet[variableIndex].RemoveAt(elemIndex);
+			}
+		}
+
+		private int FindVariableIndex (TextBox tarCell) {
+			int variableIndex = -1;
+			for (int j = 0; j < xSet.Children.Count; j++) {
+				if (((StackPanel)xSet.Children[j]).Children.Contains(tarCell)) {
+					variableIndex = j;
+				}
+			}
+
+			Debug.Assert(variableIndex >= 0, "Can't find such cell");
+			return variableIndex;
 		}
 
 		#endregion

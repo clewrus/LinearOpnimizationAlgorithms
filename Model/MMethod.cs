@@ -5,24 +5,34 @@ using System.Text;
 
 namespace YakimovTheSimplex.Model {
 	public class MMethod : ISimplexTableTransform {
+		private bool multNegRows;
+
+		public MMethod (bool multNegativeRowsByMinusOne=true) {
+			multNegRows = multNegativeRowsByMinusOne;
+		}
+
 		public string MakeTransform (SimplexTable inputTable, out SimplexTable outputTable, out bool success) {
 			outputTable = new SimplexTable(inputTable);
+			string result = "";
 
-			var invertedLines = false;
-			for (int i = 0; i < outputTable.NumOfConstrains; i++) {
-				if (outputTable.bVector[i].value >= 0) continue;
+			if (multNegRows) {
+				var invertedLines = false;
+				for (int i = 0; i < outputTable.NumOfConstrains; i++) {
+					if (outputTable.bVector[i].value >= 0) continue;
 
-				invertedLines = true;
-				outputTable.bVector[i].value *= BigRational.MinusOne;
-				for (int j = 0; j < outputTable.NumOfVariables; j++) {
-					outputTable.aMatrix[i][j].value *= BigRational.MinusOne;
+					invertedLines = true;
+					outputTable.bVector[i].value *= BigRational.MinusOne;
+					for (int j = 0; j < outputTable.NumOfVariables; j++) {
+						outputTable.aMatrix[i][j].value *= BigRational.MinusOne;
+					}
+				}
+
+				
+				if (invertedLines) {
+					result += "Some of constrains equations were multiplied by -1.<br>";
 				}
 			}
-
-			string result = "";
-			if (invertedLines) {
-				result += "Some of constrains equations were multiplied by -1.<br>";
-			}
+			
 
 			success = true;
 			return result + AddBasisVariables(outputTable);

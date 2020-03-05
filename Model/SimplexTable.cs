@@ -44,6 +44,7 @@ namespace YakimovTheSimplex.Model {
 		public List<List<SimplexCoef>> aMatrix;
 		public List<SimplexCoef> bVector;
 
+		public List<List<SimplexCoef>> discreteSet;
 		public List<int> sinteticVariables;
 
 		public SimplexTable () {
@@ -52,6 +53,7 @@ namespace YakimovTheSimplex.Model {
 			cVector = new List<SimplexCoef>();
 			aMatrix = new List<List<SimplexCoef>>();
 			bVector = new List<SimplexCoef>();
+			discreteSet = new List<List<SimplexCoef>>();
 			sinteticVariables = new List<int>();
 		}
 
@@ -71,6 +73,11 @@ namespace YakimovTheSimplex.Model {
 			});
 
 			other.bVector.ForEach(otherCoef => this.bVector.Add(new SimplexCoef(otherCoef)));
+			other.discreteSet.ForEach(otherSet => {
+				var nwSet = new List<SimplexCoef>();
+				otherSet.ForEach(otherCoef => nwSet.Add(new SimplexCoef(otherCoef)));
+				discreteSet.Add(nwSet);
+			});
 			this.sinteticVariables = new List<int>(other.sinteticVariables);
 		}
 
@@ -109,6 +116,7 @@ namespace YakimovTheSimplex.Model {
 			for (int i = 0; i < delta; i++) {
 				cLables.Add(new CostLable { Value = $"x{cLables.Count + 1}" });
 				cVector.Add(new SimplexCoef());
+				discreteSet.Add(new List<SimplexCoef>());
 
 				for (int j = 0; j < aMatrix.Count; j++) {
 					aMatrix[j].Add(new SimplexCoef());
@@ -118,6 +126,7 @@ namespace YakimovTheSimplex.Model {
 			for (int i = delta; i < 0; i++) {
 				cLables.RemoveAt(cLables.Count - 1);
 				cVector.RemoveAt(cVector.Count - 1);
+				discreteSet.RemoveAt(discreteSet.Count - 1);
 
 				for (int j = 0; j < aMatrix.Count; j++) {
 					aMatrix[j].RemoveAt(aMatrix[j].Count - 1);
@@ -154,6 +163,7 @@ namespace YakimovTheSimplex.Model {
 			public CostLable (CostLable other) {
 				this._hasError = other._hasError;
 				this._value = other._value;
+				this._isSelected = other._isSelected;
 			}
 
 			private bool _isSelected;

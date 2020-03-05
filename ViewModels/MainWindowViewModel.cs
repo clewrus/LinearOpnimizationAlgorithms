@@ -27,18 +27,37 @@ namespace YakimovTheSimplex.ViewModels {
 
 		public ICommand DualSimplexCommand {
 			get => new ViewModelCommand(
-				param => RunMethod(new DualSimplexMethod(), "DualSimplexResult.html")
+				param => RunMethod(new DualSimplexMethod(), "DualSimplexResult.html"),
+				param => InputTable.TryFindBasis(out int[] basis)
 			);
 		}
 
 		public ICommand GomoriICommand {
 			get => new ViewModelCommand(
-				param => RunMethod(new GomoriI(), "DualSimplexResult.html")
+				param => RunMethod(new GomoriI(), "GomoriIResult.html")
+			);
+		}
+
+		public ICommand GomoriIICommand {
+			get => new ViewModelCommand(
+				param => RunMethod(new GomoriII(), "GomoriIIResult.html")
+			);
+		}
+
+		public ICommand DaltonLilivileCommand {
+			get => new ViewModelCommand(
+				param => RunMethod(new DaltonLilivile(), "DaltonLilivileResult.html")
 			);
 		}
 
 		private void RunMethod (ISimplexTableTransform method, string fileName) {
-			var output = method.MakeTransform(InputTable, out SimplexTable table, out bool success);
+			string output = "";
+			try {
+				output = method.MakeTransform(InputTable, out SimplexTable table, out bool success);
+			} catch {
+
+			}
+			
 
 			string path = null;
 			using (var nwFile = File.Open(fileName, FileMode.Create, FileAccess.Write)) {

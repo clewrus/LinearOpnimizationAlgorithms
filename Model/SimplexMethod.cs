@@ -11,7 +11,7 @@ namespace YakimovTheSimplex.Model {
 
 		public virtual string MakeTransform (SimplexTable inputTable, out SimplexTable outputTable, out bool success) {
 			outputTable = new SimplexTable(inputTable);
-			string result = "Let's use simplex method.<br>";
+			string result = "<h3>Simplex method: </h3><br>Let's use simplex method.<br>";
 			PrepareForMethod(outputTable, out outputTable, ref result);
 
 			result += "Step 0:<br>";

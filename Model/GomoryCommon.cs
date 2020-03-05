@@ -12,7 +12,7 @@ namespace YakimovTheSimplex.Model {
 			result += simplex.MakeTransform(inputTable, out outputTable, out success);
 
 			int counter = 1;
-			while (success && !IsIntegerVector(outputTable.bVector)) {
+			while (success && !IsDone(outputTable)) {
 				result += $"<br><br><h4>Step {counter++}:</h4><br>";
 				result += "BVector has fractional components. Let's add another constrain.<br>";
 				result += AddConstrain(outputTable, out outputTable);
@@ -21,7 +21,7 @@ namespace YakimovTheSimplex.Model {
 				ReevaluateBasisAndDeltas(outputTable);
 				result += PrintTableToHTML(outputTable, curBasis, curDelta);
 
-				result += "Using dual Simplex method:<br>";
+				result += "<br><br>Using dual Simplex method:<br>";
 				var dualSimplex = new DualSimplexMethod();
 				result += dualSimplex.MakeTransform(outputTable, out outputTable, out success);
 			}
@@ -35,10 +35,6 @@ namespace YakimovTheSimplex.Model {
 
 		protected abstract string AddConstrain (SimplexTable inputTable, out SimplexTable outputTable);
 
-		protected bool IsIntegerVector (List<SimplexCoef> bVector) {
-			bool integerVector = true;
-			bVector.ForEach(b => integerVector = integerVector && b.value.Fract() == 0);
-			return integerVector;
-		}
+		protected abstract bool IsDone (SimplexTable table);
 	}
 }

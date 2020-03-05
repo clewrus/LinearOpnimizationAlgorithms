@@ -28,16 +28,14 @@
 					SimplexTableProperty="{Binding InputTable}"
 			/>
 
-			<UniformGrid Grid.Row="1" Rows="2" Columns="4" Width="600" Margin="50,0" HorizontalAlignment="Left">
+			<UniformGrid Grid.Row="1" Rows="2" Columns="3" Width="600" Margin="50,0" HorizontalAlignment="Left">
 				<Button Grid.Row="0" Grid.Column="0" Content="Run Simplex" Style="{StaticResource RunButton}" Command="{Binding SimplexCommand}"/>
 				<Button Grid.Row="0" Grid.Column="1" Content="Run Dual Simplex" Style="{StaticResource RunButton}"  Command="{Binding DualSimplexCommand}"/>
 				<Button Visibility="Hidden"  Style="{StaticResource RunButton}"/>
-				<Button Visibility="Hidden"  Style="{StaticResource RunButton}"/>
 
 				<Button Grid.Row="1" Grid.Column="0" Content="Run Gomori I" Style="{StaticResource RunButton}" Command="{Binding GomoriICommand}"/>
-				<Button Grid.Row="1" Grid.Column="1" Content="Run Gomori II" Style="{StaticResource RunButton}"/>
-				<Button Grid.Row="1" Grid.Column="2" Content="Run Gomori III" Style="{StaticResource RunButton}"/>
-				<Button Grid.Row="1" Grid.Column="3" Content="Run Dalton-Lleveline" Style="{StaticResource RunButton}"/>
+				<Button Grid.Row="1" Grid.Column="1" Content="Run Gomori II" Style="{StaticResource RunButton}" Command="{Binding GomoriIICommand}"/>
+				<Button Grid.Row="1" Grid.Column="3" Content="Run Dalton-Lleveline" Style="{StaticResource RunButton}" Command="{Binding DaltonLilivileCommand}"/>
 
 			</UniformGrid>
 		</Grid>

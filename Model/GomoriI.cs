@@ -42,5 +42,11 @@ namespace YakimovTheSimplex.Model {
 			}
 			return bFracts;
 		}
+
+		protected override bool IsDone (SimplexTable table) {
+			bool integerVector = true;
+			table.bVector.ForEach(b => integerVector = integerVector && b.value.Fract() == 0);
+			return integerVector;
+		}
 	}
 }

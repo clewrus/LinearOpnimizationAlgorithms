@@ -4,11 +4,12 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using System.Text;
 
 namespace YakimovTheSimplex.Model {
-	public class SimplexCoef : INotifyPropertyChanged {
+	public class SimplexCoef : INotifyPropertyChanged, IComparable<SimplexCoef> {
 		public event PropertyChangedEventHandler PropertyChanged;
 
 		public SimplexCoef () {
@@ -142,6 +143,14 @@ namespace YakimovTheSimplex.Model {
 			result._stringValue = result.ToString();
 
 			return result;
+		}
+
+		public int CompareTo ([AllowNull] SimplexCoef other) {
+			if (other == null) {
+				return -1;
+			}
+
+			return (this > other) ? 1 : -1;
 		}
 
 		public static SimplexCoef operator + (SimplexCoef l, SimplexCoef r) {

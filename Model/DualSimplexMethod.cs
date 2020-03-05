@@ -7,7 +7,7 @@ namespace YakimovTheSimplex.Model {
 	public class DualSimplexMethod : SimplexMethod, ISimplexTableTransform {
 		public override string MakeTransform (SimplexTable inputTable, out SimplexTable outputTable, out bool success) {
 			outputTable = new SimplexTable(inputTable);
-			string result = "Let's use dual simplex method.<br>";
+			string result = "<h3>Dual simplex method</h3><br>Let's use dual simplex method.<br>";
 			PrepareForMethod(outputTable, out outputTable, ref result);
 
 			result += "Step 0:<br>";
