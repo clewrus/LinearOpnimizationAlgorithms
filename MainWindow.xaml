@@ -24,7 +24,7 @@
 			
 			<custom:SimplexTableControl
 					Grid.Row="0"
-					Padding="40"
+					Padding="40,40,40,10"
 					SimplexTableProperty="{Binding InputTable}"
 			/>
 

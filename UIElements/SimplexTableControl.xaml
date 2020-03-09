@@ -160,7 +160,7 @@
 		</StackPanel>
 
 		<DockPanel Grid.Row="3" Margin="0, 20">
-			<ToggleButton DockPanel.Dock="Top" IsChecked="True" x:Name="XSetToggle" Width="100" HorizontalAlignment="Left">
+			<ToggleButton DockPanel.Dock="Top" IsChecked="False" Visibility="Hidden" x:Name="XSetToggle" Width="100" HorizontalAlignment="Left">
 				<ToggleButton.Style>
 					<Style TargetType="ToggleButton">
 						<Style.Triggers>
@@ -176,10 +176,11 @@
 				</ToggleButton.Style>
 				
 			</ToggleButton>
-			<StackPanel x:Name="xSet" 
-				Visibility="{Binding IsChecked, ElementName=XSetToggle, Converter={StaticResource BoolToVisibilityConverter}}"
-				HorizontalAlignment="Left" />
 
+			<DockPanel Margin="0,5,0,0" Visibility="{Binding IsChecked, ElementName=XSetToggle, Converter={StaticResource BoolToVisibilityConverter}}">
+				<StackPanel DockPanel.Dock="Left" x:Name="xSetLabels"/>
+				<StackPanel x:Name="xSet" HorizontalAlignment="Left" />
+			</DockPanel>
 		</DockPanel>
 	</Grid>
 </UserControl>

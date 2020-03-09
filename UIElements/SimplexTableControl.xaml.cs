@@ -198,11 +198,30 @@ namespace YakimovTheSimplex.UIElements {
 			}
 		}
 
-#region CostFunction
+		private void LableCheckboxClikedHandler (object sender, RoutedEventArgs e) {
+			bool hasSelected = false;
+			costElements.ForEach(elem => hasSelected = hasSelected || 
+				(elem.isSelected.IsChecked.HasValue && elem.isSelected.IsChecked.Value)
+			);
+
+			if (hasSelected) {
+				if (XSetToggle.Visibility == Visibility.Hidden) {
+					XSetToggle.Visibility = Visibility.Visible;
+				}
+			} else if (XSetToggle.Visibility != Visibility.Hidden) {
+				if (XSetToggle.IsChecked.HasValue && XSetToggle.IsChecked.Value) {
+					XSetToggle.IsChecked = false;
+				}
+				XSetToggle.Visibility = Visibility.Hidden;
+			}
+		}
+
+		#region CostFunction
 
 		private void AddVariableToCostFunction () {
 			var nwElement = CreateCostElement();
 			costElements.Add(nwElement);
+			nwElement.isSelected.Click += LableCheckboxClikedHandler;
 
 			LGrid.ColumnDefinitions.Add(new ColumnDefinition() {
 				Width = new GridLength(50)
@@ -383,18 +402,53 @@ namespace YakimovTheSimplex.UIElements {
 #region XSet
 
 		private void AddXSetRow () {
+			AddXSetLable();
+			AddXSetValuesRow();
+		}
+
+		private void AddXSetLable () {
+			var nwLable = XSetCoef();
+			nwLable.Background = new SolidColorBrush(Colors.LightGray);
+			nwLable.IsReadOnly = true;
+			nwLable.Cursor = Cursors.Arrow;
+
+			nwLable.SetBinding(TextBox.TextProperty, new Binding {
+				Path = new PropertyPath("Text"),
+				Source = costElements[costElements.Count - 1].label,
+				Mode = BindingMode.OneWay,
+				UpdateSourceTrigger = UpdateSourceTrigger.PropertyChanged,
+			});
+
+			nwLable.SetBinding(TextBox.VisibilityProperty, new Binding {
+				Path = new PropertyPath("IsChecked"),
+				Source = costElements[costElements.Count - 1].isSelected,
+				Mode = BindingMode.OneWay,
+				Converter = this.FindResource("BoolToVisibilityConverter") as IValueConverter,
+			});
+
+			xSetLabels.Children.Add(nwLable);
+		}
+
+		private void AddXSetValuesRow () {
 			var nwRow = new StackPanel {
 				Orientation = Orientation.Horizontal,
 				HorizontalAlignment = HorizontalAlignment.Left,
 			};
 
-			var c = XSetCoef();	
+			var c = XSetCoef();
 			c.Text = "0";
 			c.Background = new SolidColorBrush(Colors.LightGray);
 			c.IsReadOnly = true;
 			nwRow.Children.Add(c);
 
 			AddFreeXSetCell(nwRow);
+
+			nwRow.SetBinding(StackPanel.VisibilityProperty, new Binding {
+				Path = new PropertyPath("IsChecked"),
+				Source = costElements[costElements.Count - 1].isSelected,
+				Mode = BindingMode.OneWay,
+				Converter = this.FindResource("BoolToVisibilityConverter") as IValueConverter,
+			});
 
 			xSet.Children.Add(nwRow);
 			if (SimplexTableProperty != null) {
@@ -417,7 +471,9 @@ namespace YakimovTheSimplex.UIElements {
 				elem.TextChanged -= XSetCellTextChanged;
 				elem.LostKeyboardFocus -= XSetCellInputComplete;
 			}
+
 			xSet.Children.RemoveAt(xSet.Children.Count - 1);
+			xSetLabels.Children.RemoveAt(xSetLabels.Children.Count - 1);
 		}
 
 		private TextBox XSetCoef () {
