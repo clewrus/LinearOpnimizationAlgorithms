@@ -6,6 +6,9 @@ using System.Text;
 
 namespace YakimovTheSimplex.Model {
 	public abstract class GomoryCommon : SimplexMethod, ISimplexTableTransform {
+
+		public override string MethodName => "Gomori Method";
+
 		public override string MakeTransform (SimplexTable inputTable, out SimplexTable outputTable, out bool success) {
 			var result = "<h3>Let's ignore integer constrain:</h3><br>";
 			var simplex = new SimplexMethod();

@@ -11,6 +11,8 @@ namespace YakimovTheSimplex.Model {
 			multNegRows = multNegativeRowsByMinusOne;
 		}
 
+		public string MethodName => "M-Method";
+
 		public string MakeTransform (SimplexTable inputTable, out SimplexTable outputTable, out bool success) {
 			outputTable = new SimplexTable(inputTable);
 			string result = "";

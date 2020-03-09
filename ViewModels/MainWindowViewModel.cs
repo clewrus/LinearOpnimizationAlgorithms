@@ -57,7 +57,8 @@ namespace YakimovTheSimplex.ViewModels {
 			} catch {
 
 			}
-			
+
+			output = AddCssStyle(output, method);
 
 			string path = null;
 			using (var nwFile = File.Open(fileName, FileMode.Create, FileAccess.Write)) {
@@ -69,8 +70,50 @@ namespace YakimovTheSimplex.ViewModels {
 
 			try {
 				System.Diagnostics.Process.Start(@"cmd.exe ", @"/c " + path);
-			} catch { }
-			
+			} catch { }	
+		}
+
+		private string AddCssStyle (string content, ISimplexTableTransform method) {
+			var res = new StringBuilder();
+			res.Append("<!doctype html>");
+			res.Append("<html lang = \"en\">");
+			res.Append("<head>");
+			res.Append("<meta charset = \"utf - 8\">");
+			res.Append($"<title>{method.MethodName} result</title>");
+			res.Append("<meta name = \"author\" content = \"Oleksii Saitarly\">");
+
+			res.Append("<style>");
+			res.Append(
+				"table {" +
+				"	border: 1px solid grey;" +
+				"	border-collapse: collapse;" +
+				"}" +
+				"th {" +
+				"	min-width: 40px;" +
+				"	border: 1px solid grey;" +
+				"	border-collapse: collapse;" +
+				"	padding: 3px;" +
+				"}" +
+				"td {" +
+				"	text-align: center;" +
+				"	border: 1px solid grey;" +
+				"	border-collapse: collapse;" +
+				"	padding: 3px;" +
+				"}"
+			);
+
+			res.Append("</style>");
+
+
+			res.Append("</head>");
+			res.Append("<body>");
+
+			res.Append(content);
+
+			res.Append("</body>");
+			res.Append("</html>");
+
+			return res.ToString();
 		}
 
 	}

@@ -5,6 +5,9 @@ using System.Text;
 
 namespace YakimovTheSimplex.Model {
 	public class DualSimplexMethod : SimplexMethod, ISimplexTableTransform {
+
+		public override string MethodName => "Dual Simplex Method";
+
 		public override string MakeTransform (SimplexTable inputTable, out SimplexTable outputTable, out bool success) {
 			outputTable = new SimplexTable(inputTable);
 			string result = "<h3>Dual simplex method</h3><br>Let's use dual simplex method.<br>";

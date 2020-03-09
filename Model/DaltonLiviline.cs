@@ -8,6 +8,9 @@ using System.Text;
 
 namespace YakimovTheSimplex.Model {
 	public class DaltonLiviline : GomoryCommon, ISimplexTableTransform {
+
+		public override string MethodName => "Dalton-Liviline Method";
+
 		protected override string AddConstrain (SimplexTable inputTable, out SimplexTable outputTable, out bool success) {
 			outputTable = new SimplexTable(inputTable);
 			foreach (var set in outputTable.discreteSet) {

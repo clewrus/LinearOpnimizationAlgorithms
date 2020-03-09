@@ -9,6 +9,8 @@ namespace YakimovTheSimplex.Model {
 		protected List<int> curBasis;
 		protected List<SimplexCoef> curDelta;
 
+		public virtual string MethodName => "Simplex Method";
+
 		public virtual string MakeTransform (SimplexTable inputTable, out SimplexTable outputTable, out bool success) {
 			outputTable = new SimplexTable(inputTable);
 			string result = "<h3>Simplex method: </h3><br>Let's use simplex method.<br>";

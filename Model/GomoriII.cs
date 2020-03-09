@@ -6,6 +6,9 @@ using System.Text;
 
 namespace YakimovTheSimplex.Model {
 	public class GomoriII : GomoryCommon, ISimplexTableTransform {
+
+		public override string MethodName => "Gomori II Method";
+
 		protected override string AddConstrain (SimplexTable inputTable, out SimplexTable outputTable, out bool success) {
 			outputTable = new SimplexTable(inputTable);
 			success = true;

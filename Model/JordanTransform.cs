@@ -12,6 +12,8 @@ namespace YakimovTheSimplex.Model {
 			this.tarJ = j;
 		}
 
+		public string MethodName => "Jordan Transform";
+
 		public string MakeTransform (SimplexTable inputTable, out SimplexTable outputTable, out bool success) {
 			outputTable = new SimplexTable(inputTable);
 
