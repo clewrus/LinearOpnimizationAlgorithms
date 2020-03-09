@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 
 namespace YakimovTheSimplex.Model {
-	public class DaltonLilivile : GomoryCommon, ISimplexTableTransform {
+	public class DaltonLiviline : GomoryCommon, ISimplexTableTransform {
 		protected override string AddConstrain (SimplexTable inputTable, out SimplexTable outputTable, out bool success) {
 			outputTable = new SimplexTable(inputTable);
 			foreach (var set in outputTable.discreteSet) {

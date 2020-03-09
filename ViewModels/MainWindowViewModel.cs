@@ -46,7 +46,7 @@ namespace YakimovTheSimplex.ViewModels {
 
 		public ICommand DaltonLilivileCommand {
 			get => new ViewModelCommand(
-				param => RunMethod(new DaltonLilivile(), "DaltonLilivileResult.html")
+				param => RunMethod(new DaltonLiviline(), "DaltonLilivileResult.html")
 			);
 		}
 
