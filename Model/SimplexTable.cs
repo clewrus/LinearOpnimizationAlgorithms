@@ -47,6 +47,8 @@ namespace YakimovTheSimplex.Model {
 		public List<List<SimplexCoef>> discreteSet;
 		public List<int> sinteticVariables;
 
+		public bool costFIsInverted;
+
 		public SimplexTable () {
 			constantValue = new SimplexCoef();
 			cLables = new List<CostLable>();
@@ -79,6 +81,7 @@ namespace YakimovTheSimplex.Model {
 				discreteSet.Add(nwSet);
 			});
 			this.sinteticVariables = new List<int>(other.sinteticVariables);
+			this.costFIsInverted = other.costFIsInverted;
 		}
 
 		public bool TryFindBasis (out int[] basisVariablesIndexes) {

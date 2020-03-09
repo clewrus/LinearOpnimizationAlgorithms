@@ -14,12 +14,18 @@ namespace YakimovTheSimplex.Model {
 			string result = "<h3>Simplex method: </h3><br>Let's use simplex method.<br>";
 			PrepareForMethod(outputTable, out outputTable, ref result);
 
-			result += "Step 0:<br>";
+			result += "<br>";
+			if (outputTable.costFIsInverted) {
+				result += "Cost function is inverted: <br>";
+			} 
+
+			result += PrintCostFunction(outputTable);
+			result += "<br>Step 0:<br>";
 			result += PrintTableToHTML(outputTable, curBasis, curDelta);
 			result += "<br><br>";
 
 			int iterNum = 0;
-			string checkResult = "";
+			string checkResult;
 			while (CanContinue(outputTable, curDelta, out checkResult, out success)) {
 				if (iterNum++ > 0) result += $"Step {iterNum}:<br>";
 				int minDeltaIndex = FindIndexOfMin(curDelta);
@@ -56,6 +62,38 @@ namespace YakimovTheSimplex.Model {
 			if (success) {
 				result += FormAnswer(outputTable, curBasis);
 			}
+			result += "<br>";
+
+			return result;
+		}
+
+		private string PrintCostFunction (SimplexTable table) {
+			var result = "L = ";
+
+			bool isFirst = true;
+			for (int j = 0; j < table.NumOfVariables; j++) {
+				if (table.cVector[j].value == BigRational.Zero) continue;
+
+				var coefStr = table.cVector[j].ToString();
+				if (coefStr[0] == '-') {
+					coefStr = coefStr.Substring(1).Trim();
+				}
+
+				result += (table.cVector[j].value.Sign >= 0) ? ((isFirst) ? coefStr : $"+ {coefStr}"): $"- {coefStr}";
+				result += $"*{table.cLables[j].Value} ";
+				isFirst = false;
+			}
+
+			if (table.constantValue.value != BigRational.Zero) {
+				var coefStr = table.constantValue.ToString();
+				if (coefStr[0] == '-') {
+					coefStr = coefStr.Substring(1).Trim();
+				}
+				result += (table.constantValue.value.Sign >= 0) ? $"+ {coefStr}" : $"- {coefStr}";
+			}
+
+			result += "<br>";
+
 			return result;
 		}
 
@@ -73,7 +111,16 @@ namespace YakimovTheSimplex.Model {
 				}
 			}
 
-			result += "<br>";
+			var costValue = new SimplexCoef();
+
+			ReevaluateBasisAndDeltas(table);
+			for (int i = 0; i < table.NumOfConstrains; i++) {
+				costValue += table.cVector[basis[i]] * table.bVector[i];
+			}
+
+			costValue += table.constantValue;
+			result += $"<br>L = {((table.costFIsInverted) ? (-costValue).ToString() : costValue.ToString())}<br>";
+
 			return result;
 		}
 
@@ -140,6 +187,7 @@ namespace YakimovTheSimplex.Model {
 			if (!outputTable.MinimisationTask) {
 				result += "Let's Invert Cost function so that we can solve minimization problem<br>";
 
+				outputTable.costFIsInverted = true;
 				outputTable.MinimisationTask = true;
 				outputTable.cVector.ForEach(coef => coef.value *= BigRational.MinusOne);
 				outputTable.constantValue.value *= BigRational.MinusOne;
@@ -193,7 +241,7 @@ namespace YakimovTheSimplex.Model {
 
 		protected void ReevaluateBasisAndDeltas (SimplexTable table) {
 			if (!table.TryFindBasis(out int[] basis)) {
-				Debug.Fail("Can't find basis after MMethod.");
+				Debug.Fail("Can't find basis after.");
 			}
 
 			curBasis = new List<int>(basis);

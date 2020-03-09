@@ -3,11 +3,12 @@ using Numerics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 
 namespace YakimovTheSimplex.Model {
 	public class DaltonLilivile : GomoryCommon, ISimplexTableTransform {
-		protected override string AddConstrain (SimplexTable inputTable, out SimplexTable outputTable) {
+		protected override string AddConstrain (SimplexTable inputTable, out SimplexTable outputTable, out bool success) {
 			outputTable = new SimplexTable(inputTable);
 			foreach (var set in outputTable.discreteSet) {
 				set.Sort();
@@ -19,12 +20,17 @@ namespace YakimovTheSimplex.Model {
 			}
 			ReevaluateBasisAndDeltas(outputTable);
 
-			var nuVector = FormNuVector(outputTable, curBasis);
+			var nuVector = GetValidNuVector(outputTable, out outputTable, out string result);
+			if (nuVector == null) {
+				success = false;
+				return "Can't solve task with such discrete set.<br>";
+			}
+
 			var gamas = FormGamasVector(outputTable, nuVector, curBasis);
 
 			var selectedI = FindIndexOfMin(gamas);
 			var nwI = outputTable.NumOfConstrains;
-			var result = $"Let's use {outputTable.cLables[curBasis[selectedI]].Value} row to form new constrain.<br>";
+			result += $"Let's use {outputTable.cLables[curBasis[selectedI]].Value} row to form new constrain.<br>";
 
 			outputTable.NumOfConstrains += 1;
 			for (int j = 0; j < outputTable.NumOfVariables; j++) {
@@ -33,10 +39,13 @@ namespace YakimovTheSimplex.Model {
 					outputTable.aMatrix[nwI][j].value = (-outputTable.aMatrix[selectedI][j]).value;
 				} else {
 					var b = outputTable.bVector[selectedI];
-					var nu = outputTable.discreteSet[curBasis[selectedI]][nuVector[selectedI]];
-					var next_nu = outputTable.discreteSet[curBasis[selectedI]][nuVector[selectedI] + 1];
-
-					outputTable.aMatrix[nwI][j].value = (-(((b - nu) / (next_nu - b)) * (-outputTable.aMatrix[selectedI][j]))).value;
+					var nu = outputTable.discreteSet[curBasis[selectedI]][nuVector[selectedI].Value];
+					if (b != nu) {
+						var next_nu = outputTable.discreteSet[curBasis[selectedI]][nuVector[selectedI].Value + 1];
+						outputTable.aMatrix[nwI][j].value = (-(((b - nu) / (next_nu - b)) * (-outputTable.aMatrix[selectedI][j]))).value;
+					} else {
+						outputTable.aMatrix[nwI][j].value = BigRational.Zero;
+					}
 				}
 			}
 
@@ -45,37 +54,82 @@ namespace YakimovTheSimplex.Model {
 			outputTable.NumOfVariables += 1;
 			outputTable.aMatrix[nwI][outputTable.NumOfVariables - 1].value = BigRational.One;
 
+			success = true;
 			return result;
 		}
 
-		private List<SimplexCoef> FormGamasVector (SimplexTable table, List<int> nuVec, List<int> basis) {
+		private List<SimplexCoef> FormGamasVector (SimplexTable table, List<int?> nuVec, List<int> basis) {
 			var gamas = new List<SimplexCoef>();
 			for (int i = 0; i < table.NumOfConstrains; i++) {
-				if (nuVec[i] < 0) {
+				if (nuVec[i] == null || nuVec[i].Value < 0) {
 					gamas.Add(null);
 				} else {
-					gamas.Add(-(table.bVector[i] - table.discreteSet[basis[i]][nuVec[i]]));
+					gamas.Add(-(table.bVector[i] - table.discreteSet[basis[i]][nuVec[i].Value]));
 				}
 			}
 			return gamas;
 		}
 
-		private List<int> FormNuVector (SimplexTable table, List<int> basis) {
-			var nuVec = new List<int>();
+
+		private List<int?> GetValidNuVector (SimplexTable inputTable, out SimplexTable outputTable, out string result) {
+			outputTable = inputTable;
+			result = "";
+
+			List<int?> nuVector = null;
+			bool foundAllNus = false;
+			while (!foundAllNus) {
+				ReevaluateBasisAndDeltas(outputTable);
+				nuVector = FormNuVector(outputTable, curBasis, out foundAllNus);
+				if (!foundAllNus) {
+					var tarJ = curBasis[nuVector.IndexOf(-1)];
+					result += $"{outputTable.cLables[tarJ].Value} became bigger than any element of its set.<br>";
+					var maxElem = outputTable.discreteSet[tarJ].Max();
+					result += $"So, let's add constrain '{outputTable.cLables[tarJ].Value}' < {maxElem.ToString()} and run MMethod.<br>";
+
+					outputTable = new SimplexTable(outputTable);
+					outputTable.NumOfConstrains += 1;
+					outputTable.NumOfVariables += 1;
+					outputTable.aMatrix[outputTable.NumOfConstrains - 1][tarJ].value = BigRational.One;
+					outputTable.aMatrix[outputTable.NumOfConstrains - 1][outputTable.NumOfVariables - 1].value = BigRational.One;
+					outputTable.bVector[outputTable.NumOfConstrains - 1].value = maxElem.value;
+
+					var simplexMethod = new SimplexMethod();
+					result += simplexMethod.MakeTransform(outputTable, out outputTable, out bool success);
+					if (!success) {
+						return null;
+					}
+				}
+			}
+			
+			return nuVector;
+		}
+
+		private List<int?> FormNuVector (SimplexTable table, List<int> basis, out bool success) {
+			var nuVec = new List<int?>();
+			success = true;
 
 			for (int i = 0; i < table.NumOfConstrains; i++) {
 				if (!table.cLables[basis[i]].IsSelected || table.discreteSet[basis[i]].Contains(table.bVector[i])) {
-					nuVec.Add(-1);
+					nuVec.Add(null);
 					continue;
 				} else {
 					int nu = -1;
-					for (; nu < table.discreteSet[basis[i]].Count - 1; nu++) {
-						if (table.bVector[i] < table.discreteSet[basis[i]][nu + 1]) break;
+					
+					for (int k = 1; k < table.discreteSet[basis[i]].Count; k++) {
+						if (table.bVector[i].value < table.discreteSet[basis[i]][k].value) {
+							nu = k - 1;
+						}
 					}
-					Debug.Assert(nu >= 0, "Variable is greater then any number from discrete set.");
+
+					if (table.discreteSet[basis[i]][table.discreteSet[basis[i]].Count - 1].value == table.bVector[i].value) {
+						nu = table.discreteSet[basis[i]].Count - 1;
+					}
+
+					success = success && (nu >= 0);
 					nuVec.Add(nu);
 				}
 			}
+			
 			return nuVec;
 		}
 

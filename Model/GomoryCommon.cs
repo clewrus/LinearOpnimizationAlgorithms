@@ -15,7 +15,10 @@ namespace YakimovTheSimplex.Model {
 			while (success && !IsDone(outputTable)) {
 				result += $"<br><br><h4>Step {counter++}:</h4><br>";
 				result += "BVector has fractional components. Let's add another constrain.<br>";
-				result += AddConstrain(outputTable, out outputTable);
+
+				result += AddConstrain(outputTable, out outputTable, out success);
+				if (!success) break;
+
 				result += "So new Table looks like this:<br>";
 
 				ReevaluateBasisAndDeltas(outputTable);
@@ -33,7 +36,7 @@ namespace YakimovTheSimplex.Model {
 			return result;
 		}
 
-		protected abstract string AddConstrain (SimplexTable inputTable, out SimplexTable outputTable);
+		protected abstract string AddConstrain (SimplexTable inputTable, out SimplexTable outputTable, out bool success);
 
 		protected abstract bool IsDone (SimplexTable table);
 	}

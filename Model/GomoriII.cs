@@ -6,8 +6,9 @@ using System.Text;
 
 namespace YakimovTheSimplex.Model {
 	public class GomoriII : GomoryCommon, ISimplexTableTransform {
-		protected override string AddConstrain (SimplexTable inputTable, out SimplexTable outputTable) {
+		protected override string AddConstrain (SimplexTable inputTable, out SimplexTable outputTable, out bool success) {
 			outputTable = new SimplexTable(inputTable);
+			success = true;
 
 			ReevaluateBasisAndDeltas(outputTable);
 			var bFracts = FormBFractVector(outputTable);

@@ -380,7 +380,7 @@ namespace YakimovTheSimplex.UIElements {
 
 		#endregion
 
-		#region XSet
+#region XSet
 
 		private void AddXSetRow () {
 			var nwRow = new StackPanel {
@@ -496,7 +496,7 @@ namespace YakimovTheSimplex.UIElements {
 			return variableIndex;
 		}
 
-		#endregion
+#endregion
 
 		public SimplexTable SimplexTableProperty {
 			get { return (SimplexTable)GetValue(SimplexTablePropertyProperty); }

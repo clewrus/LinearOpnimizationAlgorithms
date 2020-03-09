@@ -55,6 +55,10 @@ namespace YakimovTheSimplex.Model {
 			if (HasError) return "Can't parse";
 			string result = "";
 
+			if (isM && (value == BigRational.One || value == BigRational.MinusOne)) {
+				return (value.Sign < 0) ? "-M" : "M";
+			}
+
 			result += (value.Fract() == 0) ? value.Numerator.ToString() : $"{value.Numerator}/{value.Denominator}";
 			result += (isM) ? " M" : "";
 
@@ -134,20 +138,9 @@ namespace YakimovTheSimplex.Model {
 			return this.value == BigRational.One;
 		}
 
-		public SimplexCoef GetInverted () {
-			if (this.HasError || this.IsZero()) return null;
-			if (this.isM) return new SimplexCoef();
-
-			var result = new SimplexCoef(this);
-			result.value = BigRational.One / result.value;
-			result._stringValue = result.ToString();
-
-			return result;
-		}
-
 		public int CompareTo ([AllowNull] SimplexCoef other) {
 			if (other == null) {
-				return -1;
+				return 1;
 			}
 
 			return (this > other) ? 1 : -1;
